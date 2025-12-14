@@ -1,90 +1,110 @@
 import { Request, Response } from 'express';
 import prisma from '../database/prismaClient';
-import { PaymentService } from '../services/PaymentService';
 import { v4 as uuidv4 } from 'uuid';
+import { PaymentService } from '../services/PaymentService';
+import { EmailService } from '../services/EmailService';
 
 export const createBooking = async (req: Request, res: Response) => {
   try {
-    const { userId, roomId, checkIn, checkOut, totalPrice } = req.body;
+    const { roomId, userId, checkIn, checkOut, totalPrice } = req.body;
 
-    if (!userId || !roomId || !checkIn || !checkOut || !totalPrice) {
+    if (!roomId || !checkIn || !checkOut || !totalPrice) {
       res.status(400).json({ error: 'Missing required fields' });
       return;
     }
 
-    const start = new Date(checkIn);
-    const end = new Date(checkOut);
+    // Find or create user (for demo purposes, we'll create a dummy user if userId is not found)
+    let user = userId ? await prisma.user.findUnique({ where: { id: userId } }) : null;
     
-    if (start >= end) {
-        res.status(400).json({ error: 'Check-out date must be after check-in date' });
-        return;
-    }
-
-    // Get or Create User
-    let user = await prisma.user.findFirst({ where: { id: userId } });
     if (!user) {
-         user = await prisma.user.create({
-            data: {
-                id: userId.length > 10 ? userId : undefined, // Usage of ID if it looks like uuid or let prisma gen
-                email: `guest_${Date.now()}@example.com`,
-                name: 'Guest User',
-                password: 'temp_password',
-            }
-        });
+      // Create a dummy user for demo
+      user = await prisma.user.create({
+        data: {
+          email: `guest-${Date.now()}@phevonhotel.com`,
+          name: 'Guest User',
+          password: 'dummy'
+        }
+      });
     }
 
-    // Generate Transaction Reference
-    const tx_ref = `tx-phevon-${uuidv4()}`;
+    // Get room details for email
+    const room = await prisma.room.findUnique({ where: { id: roomId } });
+    if (!room) {
+      res.status(404).json({ error: 'Room not found' });
+      return;
+    }
 
-    // Create Booking (PENDING)
+    // Create booking with PENDING status
     const booking = await prisma.booking.create({
       data: {
         userId: user.id,
         roomId,
-        checkIn: start,
-        checkOut: end,
+        checkIn: new Date(checkIn),
+        checkOut: new Date(checkOut),
         totalPrice,
-        status: 'PENDING' 
+        status: 'PENDING'
       }
     });
 
-    // Create Payment Record (PENDING)
-    await prisma.payment.create({
-        data: {
-            bookingId: booking.id,
-            amount: totalPrice,
-            provider: 'CHAPA',
-            status: 'PENDING',
-            transactionId: tx_ref
-        }
+    // Generate unique transaction reference
+    const tx_ref = `tx-${uuidv4()}`;
+
+    // Create payment record with PENDING status
+    const payment = await prisma.payment.create({
+      data: {
+        bookingId: booking.id,
+        amount: totalPrice,
+        status: 'PENDING',
+        transactionId: tx_ref
+      }
     });
 
-    // Initialize Chapa Payment
-    const paymentResponse = await PaymentService.initializePayment({
+    // Send email notification
+    try {
+      await EmailService.sendBookingNotification({
+        bookingId: booking.id,
+        roomName: room.name,
+        checkIn: new Date(checkIn).toLocaleDateString(),
+        checkOut: new Date(checkOut).toLocaleDateString(),
+        totalPrice,
+        guestEmail: user.email,
+        guestName: user.name
+      });
+    } catch (emailError) {
+      console.error('Failed to send booking email:', emailError);
+      // Continue even if email fails
+    }
+
+    // Initialize payment with Chapa
+    try {
+      const chapaResponse = await PaymentService.initializePayment({
         amount: totalPrice,
         currency: 'ETB',
         email: user.email,
-        first_name: user.name.split(' ')[0],
-        last_name: user.name.split(' ')[1] || 'Guest',
+        first_name: user.name.split(' ')[0] || 'Guest',
+        last_name: user.name.split(' ')[1] || 'User',
         tx_ref: tx_ref,
-        return_url: `http://localhost:5173/payment/success?tx_ref=${tx_ref}`,
+        callback_url: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/payment/success?tx_ref=${tx_ref}`,
+        return_url: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/payment/success?tx_ref=${tx_ref}`,
         customization: {
-            title: 'Phevon Hotel Booking',
-            description: `Payment for booking #${booking.id}`
+          title: 'Phevon Hotel Booking',
+          description: `Booking for ${room.name}`
         }
-    });
+      });
 
-    if (paymentResponse.status !== 'success') {
-        throw new Error('Chapa payment initialization returned non-success');
+      res.status(201).json({
+        booking,
+        payment,
+        checkout_url: chapaResponse.data.checkout_url,
+        message: 'Booking created. Please check your email for confirmation.'
+      });
+    } catch (paymentError) {
+      console.error('Payment initialization error:', paymentError);
+      res.status(500).json({ error: 'Failed to initialize payment' });
     }
 
-    res.status(201).json({
-        booking,
-        checkout_url: paymentResponse.data.checkout_url
-    });
-
   } catch (error) {
-    console.error('Error creating booking:', error);
+    console.error('Booking creation error:', error);
     res.status(500).json({ error: 'Failed to create booking' });
   }
 };

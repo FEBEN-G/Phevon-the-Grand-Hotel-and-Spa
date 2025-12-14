@@ -60,7 +60,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ room }) => {
             return;
         }
 
-        setMessage({ type: 'success', text: 'Booking request sent successfully!' });
+        setMessage({ type: 'success', text: 'Booking pending! Please check your email for payment instructions.' });
     } catch (error) {
         console.error("Booking error:", error);
         setMessage({ type: 'error', text: 'Failed to book room. Please try again.' });

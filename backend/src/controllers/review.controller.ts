@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import prisma from '../database/prismaClient';
+import { EmailService } from '../services/EmailService';
 
 export const createReview = async (req: Request, res: Response) => {
   try {
@@ -18,7 +19,7 @@ export const createReview = async (req: Request, res: Response) => {
     // Verify Booking
     const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
-        include: { user: true }
+        include: { user: true, room: true }
     });
 
     if (!booking) {
@@ -63,7 +64,24 @@ export const createReview = async (req: Request, res: Response) => {
         }
     });
 
-    res.status(201).json(review);
+    // Send email notification
+    try {
+      await EmailService.sendReviewNotification({
+        roomName: booking.room.name,
+        guestName: booking.user.name,
+        guestEmail: booking.user.email,
+        rating,
+        comment
+      });
+    } catch (emailError) {
+      console.error('Failed to send review email:', emailError);
+      // Continue even if email fails
+    }
+
+    res.status(201).json({
+      review,
+      message: 'Review submitted successfully. Thank you for your feedback!'
+    });
 
   } catch (error) {
     console.error('Error creating review:', error);

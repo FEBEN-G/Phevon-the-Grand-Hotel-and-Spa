@@ -28,7 +28,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ roomId, onReviewSubmitted }) =>
             comment
         });
         
-        setMessage({ type: 'success', text: 'Thank you! Your review has been submitted.' });
+        setMessage({ type: 'success', text: 'Review submitted! Please check your email for confirmation.' });
         setBookingId('');
         setEmail('');
         setComment('');
