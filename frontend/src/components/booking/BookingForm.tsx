@@ -47,14 +47,19 @@ const BookingForm: React.FC<BookingFormProps> = ({ room }) => {
         // For this demo phase, we assume the backend might need auth or we mock it.
         // Actually, let's just send the request. The backend 'createBooking' needs to exist.
         
-        await api.post('/bookings', {
+        const response = await api.post('/bookings', {
             roomId: room.id,
-            userId: userId, // The backend needs to handle this or we generate a guest user
+            userId: userId, 
             checkIn: new Date(checkIn).toISOString(),
             checkOut: new Date(checkOut).toISOString(),
             totalPrice: total
         });
         
+        if (response.data.checkout_url) {
+            window.location.href = response.data.checkout_url;
+            return;
+        }
+
         setMessage({ type: 'success', text: 'Booking request sent successfully!' });
     } catch (error) {
         console.error("Booking error:", error);
