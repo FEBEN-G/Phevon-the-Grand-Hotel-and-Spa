@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { differenceInDays } from 'date-fns';
 import type { Room } from '../../services/RoomService';
-import api from '../../services/api';
 
 interface BookingFormProps {
   room: Room;
 }
 
 const BookingForm: React.FC<BookingFormProps> = ({ room }) => {
+  const navigate = useNavigate();
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
   const [guests, setGuests] = useState(1);
@@ -33,40 +34,29 @@ const BookingForm: React.FC<BookingFormProps> = ({ room }) => {
 
     const total = calculateTotal();
     
-    // Simple User ID for now (In real app, get from Auth Context)
-    const userId = "temp-user-id"; 
-
     if (total <= 0) {
         setMessage({ type: 'error', text: 'Invalid Dates' });
         setLoading(false);
         return;
     }
 
-    try {
-        // In a real app we'd likely create the user first or ensure auth
-        // For this demo phase, we assume the backend might need auth or we mock it.
-        // Actually, let's just send the request. The backend 'createBooking' needs to exist.
-        
-        const response = await api.post('/bookings', {
-            roomId: room.id,
-            userId: userId, 
-            checkIn: new Date(checkIn).toISOString(),
-            checkOut: new Date(checkOut).toISOString(),
-            totalPrice: total
-        });
-        
-        if (response.data.checkout_url) {
-            window.location.href = response.data.checkout_url;
-            return;
-        }
+    const start = new Date(checkIn);
+    const end = new Date(checkOut);
+    const nights = differenceInDays(end, start);
 
-        setMessage({ type: 'success', text: 'Booking pending! Please check your email for payment instructions.' });
-    } catch (error) {
-        console.error("Booking error:", error);
-        setMessage({ type: 'error', text: 'Failed to book room. Please try again.' });
-    } finally {
-        setLoading(false);
-    }
+    // Navigate to payment page with booking data
+    navigate('/payment', {
+      state: {
+        roomId: room.id,
+        roomName: room.name,
+        checkIn: checkIn,
+        checkOut: checkOut,
+        totalPrice: total,
+        nights: nights
+      }
+    });
+
+    setLoading(false);
   };
 
   const total = calculateTotal();
