@@ -36,10 +36,10 @@ const Hero: React.FC = () => {
         </button>
       </div>
 
-      {/* Booking Widget Placeholder (Bottom) */}
-      <div className="absolute bottom-0 w-full z-20 hidden md:block">
-        <div className="container mx-auto">
-          <div className="bg-white p-6 shadow-2xl flex justify-between items-center transform translate-y-1/2">
+      {/* Booking Widget (Bottom) */}
+      <div className="absolute bottom-0 left-0 right-0 z-20 hidden md:block pb-8">
+        <div className="container mx-auto px-6">
+          <div className="bg-white p-6 shadow-2xl flex justify-between items-center">
              <div className="flex-1 text-center border-r border-gray-200">
                 <span className="block text-xs text-gray-500 uppercase tracking-wider">Check In</span>
                 <span className="text-lg font-serif">Select Date</span>
