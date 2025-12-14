@@ -1,7 +1,31 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import api from '../../services/api';
 
 const Footer: React.FC = () => {
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+
+    setLoading(true);
+    setMessage('');
+
+    try {
+      await api.post('/email/newsletter', { email });
+      setMessage('Successfully subscribed!');
+      setEmail('');
+    } catch (error) {
+      setMessage('Failed to subscribe. Please try again.');
+    } finally {
+      setLoading(false);
+      setTimeout(() => setMessage(''), 3000);
+    }
+  };
+
   return (
     <footer className="bg-secondary text-white py-16">
       <div className="container mx-auto px-6">
@@ -29,28 +53,41 @@ const Footer: React.FC = () => {
           <div className="space-y-4">
             <h3 className="text-lg font-serif tracking-wider mb-4">Contact</h3>
             <ul className="space-y-2 text-sm text-gray-400 font-sans">
-              <li>123 Luxury Ave, City Center</li>
-              <li>Springfield, YT 54321</li>
-              <li className="pt-2">+1 (555) 123-4567</li>
-              <li>reservations@phevonhotel.com</li>
+              <li>Kazanchis</li>
+              <li>Addis Ababa, Ethiopia</li>
+              <li className="pt-2">+251 937 318 894</li>
+              <li>+251 964 288 068</li>
+              <li className="pt-2">phevondigitalsolutions@gmail.com</li>
             </ul>
           </div>
 
-          {/* Newsletter (Static) */}
+          {/* Newsletter */}
           <div className="space-y-4">
             <h3 className="text-lg font-serif tracking-wider mb-4">Newsletter</h3>
             <p className="text-gray-400 text-sm mb-4">Subscribe for exclusive offers.</p>
-            <div className="flex flex-col space-y-2">
+            <form onSubmit={handleSubscribe} className="flex flex-col space-y-2">
               <input 
                 type="email" 
                 placeholder="Your Email" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="bg-transparent border border-gray-600 px-4 py-2 text-sm focus:outline-none focus:border-accent transition-colors"
-                disabled // Disabled for now until backend hookup
+                required
+                disabled={loading}
               />
-              <button className="bg-white text-secondary px-4 py-2 text-sm font-serif tracking-wider hover:bg-accent hover:text-white transition-colors">
-                SUBSCRIBE
+              <button 
+                type="submit"
+                disabled={loading}
+                className="bg-white text-secondary px-4 py-2 text-sm font-serif tracking-wider hover:bg-accent hover:text-white transition-colors disabled:opacity-50"
+              >
+                {loading ? 'SUBSCRIBING...' : 'SUBSCRIBE'}
               </button>
-            </div>
+              {message && (
+                <p className={`text-xs ${message.includes('Success') ? 'text-green-400' : 'text-red-400'}`}>
+                  {message}
+                </p>
+              )}
+            </form>
           </div>
         </div>
 

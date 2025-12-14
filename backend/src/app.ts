@@ -8,6 +8,7 @@ import bookingRoutes from './routes/booking.routes';
 import paymentRoutes from './routes/payment.routes';
 import reviewRoutes from './routes/review.routes';
 import aiRoutes from './routes/ai.routes';
+import emailRoutes from './routes/email.routes';
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/email', emailRoutes);
 
 // Basic Route
 app.get('/', (req: Request, res: Response) => {

@@ -1,6 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Hero: React.FC = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="relative h-screen w-full overflow-hidden">
       {/* Background Image */}
@@ -25,7 +28,10 @@ const Hero: React.FC = () => {
           Experience the epitome of luxury, where timeless elegance meets modern comfort in the heart of the city.
         </p>
         
-        <button className="px-10 py-4 bg-accent text-white font-serif tracking-widest hover:bg-accent-dark transition-all duration-300 transform hover:-translate-y-1 shadow-lg animate-fade-in-up delay-300">
+        <button 
+          onClick={() => navigate('/about')}
+          className="px-10 py-4 bg-accent text-white font-serif tracking-widest hover:bg-accent-dark transition-all duration-300 transform hover:-translate-y-1 shadow-lg animate-fade-in-up delay-300"
+        >
           DISCOVER MORE
         </button>
       </div>
@@ -47,7 +53,10 @@ const Hero: React.FC = () => {
                 <span className="text-lg font-serif">2 Adults</span>
              </div>
              <div className="flex-none px-6">
-                <button className="bg-secondary text-white px-8 py-3 font-serif tracking-widest hover:bg-black transition-colors">
+                <button 
+                  onClick={() => navigate('/rooms')}
+                  className="bg-secondary text-white px-8 py-3 font-serif tracking-widest hover:bg-black transition-colors"
+                >
                   CHECK AVAILABILITY
                 </button>
              </div>

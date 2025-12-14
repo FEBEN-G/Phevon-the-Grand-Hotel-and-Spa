@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Layout from '../components/layout/Layout';
+import api from '../services/api';
 
 const Contact: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -10,12 +11,25 @@ const Contact: React.FC = () => {
     message: ''
   });
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would send to backend
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 3000);
+    setLoading(true);
+    setError('');
+
+    try {
+      await api.post('/email/contact', formData);
+      setSubmitted(true);
+      setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+      setTimeout(() => setSubmitted(false), 5000);
+    } catch (err) {
+      setError('Failed to send message. Please try again.');
+      setTimeout(() => setError(''), 3000);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -56,7 +70,7 @@ const Contact: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="font-serif text-lg text-secondary mb-1">Address</h3>
-                    <p className="text-gray-600">123 Luxury Avenue<br />Bole, Addis Ababa<br />Ethiopia</p>
+                    <p className="text-gray-600">Kazanchis<br />Addis Ababa<br />Ethiopia</p>
                   </div>
                 </div>
 
@@ -68,7 +82,7 @@ const Contact: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="font-serif text-lg text-secondary mb-1">Phone</h3>
-                    <p className="text-gray-600">+251 11 123 4567<br />+251 91 234 5678</p>
+                    <p className="text-gray-600">+251 937 318 894<br />+251 964 288 068</p>
                   </div>
                 </div>
 
@@ -80,7 +94,7 @@ const Contact: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="font-serif text-lg text-secondary mb-1">Email</h3>
-                    <p className="text-gray-600">info@phevonhotel.com<br />reservations@phevonhotel.com</p>
+                    <p className="text-gray-600">phevondigitalsolutions@gmail.com</p>
                   </div>
                 </div>
 
@@ -194,11 +208,18 @@ const Contact: React.FC = () => {
                   </div>
                 )}
 
+                {error && (
+                  <div className="bg-red-50 text-red-700 p-4 text-sm text-center">
+                    {error}
+                  </div>
+                )}
+
                 <button 
                   type="submit"
-                  className="w-full bg-secondary text-white py-4 font-serif tracking-widest hover:bg-black transition-colors duration-300"
+                  disabled={loading}
+                  className="w-full bg-secondary text-white py-4 font-serif tracking-widest hover:bg-black transition-colors duration-300 disabled:opacity-50"
                 >
-                  SEND MESSAGE
+                  {loading ? 'SENDING...' : 'SEND MESSAGE'}
                 </button>
               </form>
             </div>
@@ -215,7 +236,7 @@ const Contact: React.FC = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
             <p className="font-sans">Map integration placeholder</p>
-            <p className="text-sm text-gray-400 mt-2">123 Luxury Avenue, Bole, Addis Ababa</p>
+            <p className="text-sm text-gray-400 mt-2">Kazanchis, Addis Ababa, Ethiopia</p>
           </div>
         </div>
       </section>
