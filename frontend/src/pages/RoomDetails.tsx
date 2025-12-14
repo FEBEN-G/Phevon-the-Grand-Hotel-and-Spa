@@ -3,11 +3,14 @@ import { useParams, Link } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import { RoomService, type Room } from '../services/RoomService';
 import BookingForm from '../components/booking/BookingForm';
+import ReviewList from '../components/reviews/ReviewList';
+import ReviewForm from '../components/reviews/ReviewForm';
 
 const RoomDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [room, setRoom] = useState<Room | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshReviews, setRefreshReviews] = useState(0);
 
   useEffect(() => {
     const fetchRoom = async () => {
@@ -84,6 +87,12 @@ const RoomDetails: React.FC = () => {
                         <img key={idx} src={img} alt={`Room view ${idx + 1}`} className="w-full h-64 object-cover rounded-sm shadow-sm" />
                     ))}
                 </div>
+            </div>
+
+            <div className="mt-16 border-t border-gray-100 pt-10">
+                <h3 className="text-2xl font-serif text-secondary mb-10">Guest Reviews</h3>
+                <ReviewList roomId={room.id} refreshTrigger={refreshReviews} />
+                <ReviewForm roomId={room.id} onReviewSubmitted={() => setRefreshReviews(prev => prev + 1)} />
             </div>
           </div>
 
