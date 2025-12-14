@@ -1,9 +1,16 @@
+import { Routes, Route } from 'react-router-dom';
+import Home from './pages/Home';
+
 function App() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 text-secondary">
-      <h1 className="text-4xl font-serif text-accent mb-4">Phevon The Grand Hotel & Spa</h1>
-      <p className="font-sans text-lg">Luxury Awaits. Project Setup Complete.</p>
-    </div>
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="*" element={
+        <div className="h-screen flex items-center justify-center text-2xl font-serif">
+          404 - Page Not Found
+        </div>
+      } />
+    </Routes>
   );
 }
 
