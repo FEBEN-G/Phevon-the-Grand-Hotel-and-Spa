@@ -1,0 +1,9 @@
+import { Router } from 'express';
+import { getAllRooms, getRoomById } from '../controllers/room.controller';
+
+const router = Router();
+
+router.get('/', getAllRooms);
+router.get('/:id', getRoomById);
+
+export default router;

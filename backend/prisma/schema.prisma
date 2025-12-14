@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  password  String
+  name      String
+  role      String    @default("USER") // USER, ADMIN
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  bookings  Booking[]
+  reviews   Review[]
+}
+
+model Room {
+  id            String    @id @default(uuid())
+  name          String
+  description   String
+  pricePerNight Float
+  capacity      Int
+  type          String // SUITE, DELUXE, STANDARD
+  amenities     String // Stored as JSON string
+  images        String // Stored as JSON string
+  isAvailable   Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  bookings      Booking[]
+}
+
+model Booking {
+  id         String    @id @default(uuid())
+  userId     String
+  roomId     String
+  checkIn    DateTime
+  checkOut   DateTime
+  totalPrice Float
+  status     String    @default("PENDING") // PENDING, CONFIRMED, CANCELLED
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  
+  user       User      @relation(fields: [userId], references: [id])
+  room       Room      @relation(fields: [roomId], references: [id])
+  payment    Payment?
+  review     Review?
+}
+
+model Payment {
+  id            String   @id @default(uuid())
+  bookingId     String   @unique
+  amount        Float
+  provider      String   @default("CHAPA")
+  status        String   @default("PENDING") // PENDING, SUCCESS, FAILED
+  transactionId String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  booking       Booking  @relation(fields: [bookingId], references: [id])
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  bookingId String   @unique
+  userId    String
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+  
+  booking   Booking  @relation(fields: [bookingId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+}
