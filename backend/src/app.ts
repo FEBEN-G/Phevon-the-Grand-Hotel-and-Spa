@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import compression from 'compression';
 import dotenv from 'dotenv';
 import roomRoutes from './routes/room.routes';
+import bookingRoutes from './routes/booking.routes';
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api/rooms', roomRoutes);
+app.use('/api/bookings', bookingRoutes);
 
 // Basic Route
 app.get('/', (req: Request, res: Response) => {
