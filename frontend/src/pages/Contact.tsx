@@ -224,17 +224,17 @@ const Contact: React.FC = () => {
       </section>
 
       {/* Map Section */}
-      <section className="h-96 bg-gray-200">
-        <div className="w-full h-full flex items-center justify-center text-gray-500">
-          <div className="text-center">
-            <svg className="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            <p className="font-sans">Map integration placeholder</p>
-            <p className="text-sm text-gray-400 mt-2">Kazanchis, Addis Ababa, Ethiopia</p>
-          </div>
-        </div>
+      <section className="h-96 md:h-[500px] w-full bg-gray-200">
+        <iframe
+          title="Phevon Hotel Location"
+          width="100%"
+          height="100%"
+          style={{ border: 0 }}
+          loading="lazy"
+          allowFullScreen
+          referrerPolicy="no-referrer-when-downgrade"
+          src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&q=Kazanchis,Addis+Ababa,Ethiopia`}
+        ></iframe>
       </section>
     </Layout>
   );
